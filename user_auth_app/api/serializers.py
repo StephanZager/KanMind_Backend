@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from user_auth_app.models import UserProfile
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -30,3 +31,5 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user_account.save()
         return user_account
         
+        
+    
