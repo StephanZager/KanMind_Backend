@@ -32,4 +32,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user_account
         
         
-    
+class  UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+        
