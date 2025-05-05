@@ -32,8 +32,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user_account
         
         
-class  UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    password = serializers.CharField(source = 'user.password', read_only=True)
+
     class Meta:
         model = UserProfile
-        fields = '__all__'
-        
+        fields = ['id', 'user', 'username', 'email', 'password']
