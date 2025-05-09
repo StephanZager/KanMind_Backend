@@ -1,10 +1,10 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
-from user_auth_app.models import UserProfile
-from .serializers import RegistrationSerializer, UserProfileSerializer
+from .serializers import RegistrationSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
@@ -25,6 +25,7 @@ class LoginView(ObtainAuthToken):
 
 
 class RegistrationView(APIView):
+    permission_classes = [AllowAny]
            
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -44,15 +45,3 @@ class RegistrationView(APIView):
         
         return Response(data)        
             
-
-
-class UserProfileList(generics.ListCreateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-
-
-class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    
-   

@@ -1,5 +1,5 @@
 from django.urls import path
-from .view import RegistrationView, UserProfileList, UserProfileDetail,LoginView
+from .view import RegistrationView,LoginView
 from rest_framework.authtoken.views import obtain_auth_token
 
 
