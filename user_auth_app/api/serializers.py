@@ -34,3 +34,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user_account.save()
 
         return user_account
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'token']
+
+    def get_token(self, obj):
+        token, created = Token.objects.get_or_create(user=obj)
+        return token.key
