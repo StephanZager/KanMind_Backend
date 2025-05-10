@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from board_app.models import Board
-from .serializers import BoardSerializer, MemberSerializer
+from .serializers import BoardSerializer, BoardSerializerDetails
 from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
 
@@ -18,6 +18,13 @@ class BoardView(generics.ListCreateAPIView):
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Board.objects.all()
-    serializer_class = BoardSerializer
+    serializer_class = BoardSerializerDetails
+    
+   # def update(self, request, *args, **kwargs):
+    #    board = self.get_object()
+        
+     #   if board.owner_id != request.user:
+      #      raise PermissionDenied("Nur der Besitzer des Boards kann Änderungen vornehmen.")
+       # return super().update(request, *args, **kwargs)
     
     
