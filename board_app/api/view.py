@@ -4,7 +4,7 @@ from board_app.models import Board
 from .serializers import BoardSerializer, BoardSerializerDetails
 from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
-
+from .permissions import IsOwner
 
 class BoardView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -17,7 +17,7 @@ class BoardView(generics.ListCreateAPIView):
 
 
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsOwner]
     queryset = Board.objects.all()
     serializer_class = BoardSerializerDetails
 
