@@ -14,6 +14,10 @@ class BoardView(generics.ListCreateAPIView):
     def get_queryset(self):
 
         return Board.objects.filter(owner_id=self.request.user)
+    
+    def perform_create(self, serializer):
+        # Setze den aktuellen Benutzer als Eigentümer des Boards
+        serializer.save(owner_id=self.request.user)
 
 
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):

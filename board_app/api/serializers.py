@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class BoardSerializer(serializers.ModelSerializer):
-    owner_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    owner_id = serializers.PrimaryKeyRelatedField(read_only=True) # wird automatisch gesetzt , queryset=User.objects.all() das nur in der daten bank manuell eingeben
     member_count = serializers.SerializerMethodField()
 
     class Meta:
