@@ -15,16 +15,10 @@ class BoardView(generics.ListCreateAPIView):
 
         return Board.objects.filter(owner_id=self.request.user)
 
+
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Board.objects.all()
     serializer_class = BoardSerializerDetails
-    
-   # def update(self, request, *args, **kwargs):
-    #    board = self.get_object()
-        
-     #   if board.owner_id != request.user:
-      #      raise PermissionDenied("Nur der Besitzer des Boards kann Änderungen vornehmen.")
-       # return super().update(request, *args, **kwargs)
-    
-    
+
+   

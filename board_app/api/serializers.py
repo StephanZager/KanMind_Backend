@@ -18,7 +18,6 @@ class BoardSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ['id', 'email', 'username']
@@ -26,13 +25,24 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class BoardSerializerDetails(serializers.ModelSerializer):
     owner_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    member_count = serializers.SerializerMethodField()
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), many=True, write_only=True)
+    members_details = MemberSerializer(
+        source='member_count', many=True, read_only=True)
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'member_count', 'ticket_count',
-                  'tasks_to_do_count', 'tasks_high_prio_count', 'owner_id']
+        fields = ['id', 'title', 'owner_id', 'members', 'members_details',
+                  'ticket_count', 'tasks_to_do_count', 'tasks_high_prio_count']
 
-    def get_member_count(self, obj):
-        members = obj.member_count.all()
-        return MemberSerializer(members, many=True).data
+    def update(self, instance, validated_data):
+        members = validated_data.pop('members', None)
+        if members is not None:
+            instance.member_count.set(members)
+            return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['members'] = rep.pop('members_details', [])
+
+        return rep
