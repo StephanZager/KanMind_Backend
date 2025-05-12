@@ -12,3 +12,11 @@ class TasksView(generics.ListCreateAPIView):
     queryset = Tasks.objects.all()
     serializer_class = TasksSerializer
     permission_classes = [permissions.IsAuthenticated,IsOwner]
+    
+class AssignedToMeView(generics.ListAPIView):
+    serializer_class = TasksSerializer
+    permission_classes = [permissions.IsAuthenticated] 
+
+    def get_queryset(self):
+        
+        return Tasks.objects.filter(assignee=self.request.user)   
