@@ -17,4 +17,12 @@ class TasksSerializer(serializers.ModelSerializer):
         model = Tasks
         fields = '__all__'
         
-   
+class TaskSerializerDetails(serializers.ModelSerializer):   
+    assignee = MemberSerializer(read_only=True)  
+    reviewer = MemberSerializer(read_only=True)
+    
+    
+    class Meta:
+
+        model = Tasks
+        fields = '__all__'
