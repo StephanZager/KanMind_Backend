@@ -21,7 +21,7 @@ class BoardView(generics.ListCreateAPIView):
       
         if members:
             users = User.objects.filter(id__in=members)
-            board.member_count.set(users)
+            board.members.set(users)
 
 
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):

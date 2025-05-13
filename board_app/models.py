@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 
 class Board(models.Model):
     title = models.CharField(max_length=20)
-    member_count = models.ManyToManyField(User, related_name='board')
+    #member_count = models.ManyToManyField(User, related_name='board')
+    members = models.ManyToManyField(User, related_name='boards')
     ticket_count = models.IntegerField(default=0)
     tasks_to_do_count = models.IntegerField(default=0)
     tasks_high_prio_count = models.IntegerField(default=0)

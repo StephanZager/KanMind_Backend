@@ -14,7 +14,7 @@ class BoardSerializer(serializers.ModelSerializer):
                   'tasks_to_do_count', 'tasks_high_prio_count', 'owner_id']
 
     def get_member_count(self, obj):
-        return obj.member_count.count()
+        return obj.members.count()
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -26,9 +26,13 @@ class MemberSerializer(serializers.ModelSerializer):
 class BoardSerializerDetails(serializers.ModelSerializer):
     owner_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     members = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True, write_only=True)
+        queryset=User.objects.all(), many=True, write_only=True
+    )
+
+    # Zum Lesen: Ausgabe als User-Objekte
     members_details = MemberSerializer(
-        source='member_count', many=True, read_only=True)
+        source='members', many=True, read_only=True
+    )
 
     class Meta:
         model = Board
@@ -38,7 +42,7 @@ class BoardSerializerDetails(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         members = validated_data.pop('members', None)
         if members is not None:
-            instance.member_count.set(members)
+            instance.members.set(members)
             return super().update(instance, validated_data)
 
     def to_representation(self, instance):
