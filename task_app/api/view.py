@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
 from task_app.models import Tasks
 from django.db.models import Q
-from user_auth_app.api.permissions import IsOwner
+from user_auth_app.api.permissions import IsOwner,IsOwnerOrMember
 
 
 class TasksView(generics.ListCreateAPIView):
@@ -16,22 +16,14 @@ class TasksView(generics.ListCreateAPIView):
 
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
-    queryset = Tasks.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrMember]
     serializer_class = TaskSerializerDetails
 
-    def get_object(self):
-        # Hole die Task basierend auf der pk und den Zugriffsrechten des Benutzers
-        try:
-            return Tasks.objects.get(
-                pk=self.kwargs['pk'],
-                board__owner_id=self.request.user
-            )
-        except Tasks.DoesNotExist:
-            return Tasks.objects.get(
-                pk=self.kwargs['pk'],
-                board__member_count=self.request.user
-            )
+    def get_queryset(self):
+        user = self.request.user
+        return Tasks.objects.filter(
+            Q(board__owner_id=user) | Q(board__members=user)
+        ).distinct()
 
 
 class AssignedToMeView(generics.ListAPIView):
