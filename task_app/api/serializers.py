@@ -23,12 +23,10 @@ class TasksSerializer(serializers.ModelSerializer):
         assignee_id = data.get('assignee_id')
         reviewer_id = data.get('reviewer_id')
 
-        # Prüfe assignee
         if assignee_id:
             if not board.members.filter(id=assignee_id).exists():
                 raise serializers.ValidationError("Assignee must be a member of the board.")
 
-        # Prüfe reviewer
         if reviewer_id:
             if not board.members.filter(id=reviewer_id).exists():
                 raise serializers.ValidationError("Reviewer must be a member of the board.")
