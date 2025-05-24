@@ -19,16 +19,12 @@ class LoginView(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
-        fullname = f"{user.first_name} {user.last_name}".strip()
-        initials = (user.first_name[:1] if user.first_name else "") + (user.last_name[:1] if user.last_name else "")
-        initials = initials.upper()
+       
         return Response({
             'token': token.key,
             'user_id': user.id,
-            'username': user.username,
+            'fullname': f"{user.first_name} {user.last_name}".strip(),
             'email': user.email,
-            'fullname': fullname,
-            'initials': initials,
         })
 
 class RegistrationView(APIView):
@@ -39,10 +35,9 @@ class RegistrationView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
-            fullname = f"{user.first_name} {user.last_name}".strip()
             return Response({
                 'token': token.key,
-                'fullname': fullname,
+                'fullname': f"{user.first_name} {user.last_name}".strip(),
                 'email': user.email,
                 'user_id': user.id,
             }, status=status.HTTP_201_CREATED)

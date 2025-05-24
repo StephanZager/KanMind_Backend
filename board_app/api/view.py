@@ -13,11 +13,11 @@ class BoardView(generics.ListCreateAPIView):
 
     def get_queryset(self):
 
-        return Board.objects.filter(owner_id=self.request.user)
+        return Board.objects.filter(owner=self.request.user)
     
     def perform_create(self, serializer):        
         members = self.request.data.get('members', [])       
-        board = serializer.save(owner_id=self.request.user)
+        board = serializer.save(owner=self.request.user)
       
         if members:
             users = User.objects.filter(id__in=members)
