@@ -5,6 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
+from django.contrib.auth.models import User
 
 
 class RegistrationView(APIView):
@@ -47,3 +48,19 @@ class LoginView(ObtainAuthToken):
             'email': user.email,
             'user_id': user.id,
         })
+
+class EmailCheckView(APIView):
+    def get(self, request):
+        email = request.query_params.get('email')
+        if not email:
+            return Response({'detail': 'Email parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(email=email)
+            fullname = f"{user.first_name} {user.last_name}".strip()
+            return Response({
+                'id': user.id,
+                'email': user.email,
+                'fullname': fullname
+            })
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
