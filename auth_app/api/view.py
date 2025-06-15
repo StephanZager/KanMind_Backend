@@ -1,11 +1,13 @@
-from .serializers import RegistrationSerializer
+from .serializers import RegistrationSerializer, EmailAuthTokenSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
 
 
-class ResgistrationView(APIView):
+class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -15,13 +17,33 @@ class ResgistrationView(APIView):
 
         if serializer.is_valid():
             save_account = serializer.save()
-            token = Token.objects.get_or_create(user=save_account)
+            token, created = Token.objects.get_or_create(user=save_account)
             data = {
                 'token': token.key,
-                'username': save_account.username,
-                'email': save_account.email
+                'fullname': save_account.username,
+                'email': save_account.email,
+                'user_id': save_account.id
             }
+            return Response(data, status=status.HTTP_201_CREATED)
         else:
             data = serializer.errors
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(data)
+
+class LoginView(ObtainAuthToken):
+    serializer_class = EmailAuthTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        fullname = f"{user.first_name} {user.last_name}".strip()
+
+        return Response({
+            'token': token.key,
+            'user_id': user.id,
+            'fullname': fullname,
+            'email': user.email,
+        })
