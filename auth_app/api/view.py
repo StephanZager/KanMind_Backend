@@ -64,3 +64,20 @@ class EmailCheckView(APIView):
             })
         except User.DoesNotExist:
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+class UserListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        users = User.objects.all()
+        user_list = [
+            {
+                'id': user.id,
+                'email': user.email,
+                'fullname': f"{user.first_name} {user.last_name}".strip(),
+                'username': user.username,
+                
+            }
+            for user in users
+        ]
+        return Response(user_list, status=status.HTTP_200_OK)        
