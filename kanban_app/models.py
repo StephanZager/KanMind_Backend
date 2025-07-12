@@ -8,7 +8,7 @@ class Board(models.Model):
     title = models.CharField(max_length=20)
     members = models.ManyToManyField(User, related_name='boards')
     owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='owned_boards', default=1)
+        User, on_delete=models.CASCADE, related_name='owned_boards')
 
 
 class Tasks(models.Model):
