@@ -15,6 +15,7 @@ class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField(default=0)
     ticket_count = serializers.SerializerMethodField(default=0)
     tasks_to_do_count = serializers.SerializerMethodField(default=0)
+    tasks_high_prio_count = serializers.SerializerMethodField(default=0)
 
     class Meta:
 
@@ -26,13 +27,16 @@ class BoardSerializer(serializers.ModelSerializer):
         return obj.members.count()
 
     def get_ticket_count(self, obj):
-        return obj.tickets.count()
+        pass
+        #return obj.tickets.count()
 
     def get_tasks_to_do_count(self, obj):
-        return obj.tasks.filter(status='to-do').count()
+        pass
+        #return obj.tasks.filter(status='to-do').count()
 
     def get_tasks_high_prio_count(self, obj):
-        return obj.tasks.filter(priority='high').count()
+        pass
+        #return obj.tasks.filter(priority='high').count()
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
