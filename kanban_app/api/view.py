@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer
+from .serializers import BoardSerializer, BoardCreateSerializer,BoardSerializerDetails
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember
 from ..models import Board
@@ -25,3 +25,9 @@ class BoardListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated,IsOwner | IsMember]
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializerDetails
