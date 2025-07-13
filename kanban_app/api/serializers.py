@@ -56,10 +56,13 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         fields = ['title', 'members']
 
 
+class MembersField(serializers.PrimaryKeyRelatedField):
+    def to_representation(self, value):
+        return MemberSerializer(instance=value).data
+
+
 class BoardSerializerDetails(serializers.ModelSerializer):
-    members = MemberSerializer(
-         many=True, read_only=True
-    )
+    members = MembersField(many=True, queryset=User.objects.all())
 
     class Meta:
         model = Board

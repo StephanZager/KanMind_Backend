@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer,BoardSerializerDetails
+from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember
 from ..models import Board
@@ -28,6 +28,15 @@ class BoardListCreateView(generics.ListCreateAPIView):
 
 
 class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated,IsOwner | IsMember]
     queryset = Board.objects.all()
     serializer_class = BoardSerializerDetails
+
+    def get_permissions(self):
+
+        if self.request.method == 'DELETE':
+            permission_classes = [permissions.IsAuthenticated, IsOwner]
+        else:
+            permission_classes = [
+                permissions.IsAuthenticated, IsOwner | IsMember]
+
+        return [permission() for permission in permission_classes]
