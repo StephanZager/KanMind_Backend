@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from kanban_app.models import Board
+from kanban_app.models import Board, Tasks
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -69,12 +69,47 @@ class BoardSerializerDetails(serializers.ModelSerializer):
         fields = ['id', 'title', 'owner_id', 'members', 'tasks']
 
 
-class TasksSerializer(serializers.ModelSerializer):
-    pass
+class TaskSerializer(serializers.ModelSerializer):
+    assignee = MemberSerializer(read_only=True)
+    reviewer = MemberSerializer(read_only=True)
+    comments_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Tasks
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority',
+                  'assignee', 'reviewer', 'due_date', 'comments_count']
+
+    def get_comments_count(self, obj):
+        return obj.comments.count()
 
 
-class TaskSerializerDetails(serializers.ModelSerializer):
-    pass
+class TaskCreateUpdateSerializer(serializers.ModelSerializer):
+
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        source='assignee', queryset=User.objects.all(), required=False, allow_null=True
+    )
+    reviewer_id = serializers.PrimaryKeyRelatedField(
+        source='reviewer', queryset=User.objects.all(), required=False, allow_null=True
+    )
+
+    class Meta:
+        model = Tasks
+        fields = ['board', 'title', 'description', 'status', 'priority',
+                  'assignee_id', 'reviewer_id', 'due_date']
+
+    def validate(self, data):
+        board = data.get('board')
+        assignee = data.get('assignee')
+        reviewer = data.get('reviewer')
+
+        if assignee and assignee not in board.members.all():
+            raise serializers.ValidationError(
+                "Der zugewiesene Benutzer ist kein Mitglied des Boards.")
+        if reviewer and reviewer not in board.members.all():
+            raise serializers.ValidationError(
+                "Der Prüfer ist kein Mitglied des Boards.")
+
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

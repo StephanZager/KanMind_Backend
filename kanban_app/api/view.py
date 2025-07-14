@@ -1,9 +1,9 @@
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails
+from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails, TaskSerializer, TaskCreateUpdateSerializer
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember
-from ..models import Board
+from ..models import Board, Tasks
 from django.db.models import Q
 
 
@@ -40,3 +40,38 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
                 permissions.IsAuthenticated, IsOwner | IsMember]
 
         return [permission() for permission in permission_classes]
+
+
+class AssignedTasksView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Tasks.objects.filter(assignee=self.request.user)
+
+
+class ReviewingTasksView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Tasks.objects.filter(reviewer=self.request.user)
+
+
+class TaskListCreateView(generics.ListCreateAPIView):
+
+    queryset = Tasks.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TaskCreateUpdateSerializer
+        return TaskSerializer
+
+    def perform_create(self, serializer):
+
+        board = serializer.validated_data.get('board')
+        if self.request.user not in board.members.all():
+            self.permission_denied(
+                self.request, message="You must be a member of the board to create a task.")
+        serializer.save(creator=self.request.user)
