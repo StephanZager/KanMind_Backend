@@ -74,4 +74,4 @@ class TaskListCreateView(generics.ListCreateAPIView):
         if self.request.user not in board.members.all():
             self.permission_denied(
                 self.request, message="You must be a member of the board to create a task.")
-        serializer.save(creator=self.request.user)
+        serializer.save()

@@ -111,6 +111,19 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+
+        assignee_obj = validated_data.pop('assignee', None)
+        reviewer_obj = validated_data.pop('reviewer', None)
+
+        task = Tasks.objects.create(**validated_data)
+
+        task.assignee = assignee_obj
+        task.reviewer = reviewer_obj
+        task.save()
+
+        return task
+
 
 class CommentSerializer(serializers.ModelSerializer):
     pass
