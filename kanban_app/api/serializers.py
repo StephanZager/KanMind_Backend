@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from kanban_app.models import Board, Tasks
+from kanban_app.models import Board, Tasks, Comment
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -32,16 +32,13 @@ class BoardSerializer(serializers.ModelSerializer):
         return obj.members.count()
 
     def get_ticket_count(self, obj):
-        pass
-        # return obj.tickets.count()
+        return obj.tasks.count()
 
     def get_tasks_to_do_count(self, obj):
-        pass
-        # return obj.tasks.filter(status='to-do').count()
+        return obj.tasks.filter(status='to-do').count()
 
     def get_tasks_high_prio_count(self, obj):
-        pass
-        # return obj.tasks.filter(priority='high').count()
+        return obj.tasks.filter(priority='high').count()
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
@@ -83,12 +80,13 @@ class TaskInBoardSerializer(TaskSerializer):
 
 
 class BoardSerializerDetails(serializers.ModelSerializer):
+    owner = MemberSerializer(read_only=True)
     members = MembersField(many=True, queryset=User.objects.all())
     tasks = TaskInBoardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
+        fields = ['id', 'title', 'owner', 'members', 'tasks']
 
 
 class TaskCreateUpdateSerializer(serializers.ModelSerializer):
@@ -112,10 +110,10 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
         if assignee and assignee not in board.members.all():
             raise serializers.ValidationError(
-                "Der zugewiesene Benutzer ist kein Mitglied des Boards.")
+                "The assigned user is not a member of the board.")
         if reviewer and reviewer not in board.members.all():
             raise serializers.ValidationError(
-                "Der Prüfer ist kein Mitglied des Boards.")
+                "The auditor is not a member of the board.")
 
         return data
 
@@ -158,12 +156,12 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
         if assignee and assignee not in board.members.all():
             raise serializers.ValidationError(
-                {"assignee_id": "Der zugewiesene Benutzer ist kein Mitglied des Boards."}
+                {"assignee_id": "The assigned user is not a member of the board."}
             )
 
         if reviewer and reviewer not in board.members.all():
             raise serializers.ValidationError(
-                {"reviewer_id": "Der Prüfer ist kein Mitglied des Boards."}
+                {"reviewer_id": "The auditor is not a member of the board."}
             )
 
         return data
@@ -180,4 +178,16 @@ class TaskDetailSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    pass
+    author = serializers.CharField(
+        source='author.get_full_name', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'created_at', 'author', 'content']
+        read_only_fields = ['id', 'created_at', 'author']
+
+    def validate_content(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "The content cannot be empty.")
+        return value
