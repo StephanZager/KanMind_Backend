@@ -9,11 +9,17 @@ from django.contrib.auth.models import User
 
 
 class RegistrationView(APIView):
+    """
+    API view for user registration.
+
+    Handles POST requests to create a new user account.
+    Validates user data using RegistrationSerializer, creates the user and an auth token,
+    and returns user information along with the token upon successful registration.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-
         data = {}
 
         if serializer.is_valid():
@@ -32,6 +38,13 @@ class RegistrationView(APIView):
 
 
 class LoginView(ObtainAuthToken):
+    """
+    API view for user login.
+
+    Handles POST requests to authenticate a user with email and password.
+    Uses a custom serializer to validate credentials and returns an auth token
+    and user data upon successful authentication.
+    """
     serializer_class = EmailAuthTokenSerializer
 
     def post(self, request, *args, **kwargs):
@@ -50,6 +63,12 @@ class LoginView(ObtainAuthToken):
         })
 
 class EmailCheckView(APIView):
+    """
+    API view to check if an email address is already registered.
+
+    Handles GET requests with an 'email' query parameter.
+    Returns the user's data if the email exists, otherwise returns a 404 Not Found error.
+    """
     def get(self, request):
         email = request.query_params.get('email')
         if not email:
@@ -66,6 +85,12 @@ class EmailCheckView(APIView):
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 class UserListView(APIView):
+    """
+    API view to list all registered users.
+
+    Handles GET requests to retrieve a complete list of all users in the system,
+    including their ID, email, and full name.
+    """
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -76,8 +101,7 @@ class UserListView(APIView):
                 'email': user.email,
                 'fullname': f"{user.first_name} {user.last_name}".strip(),
                 'username': user.username,
-                
             }
             for user in users
         ]
-        return Response(user_list, status=status.HTTP_200_OK)        
+        return Response(user_list, status=status.HTTP_200_OK)      
