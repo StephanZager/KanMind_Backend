@@ -17,7 +17,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def validate_fullname(self, value):
         if ' ' not in value.strip():
             raise serializers.ValidationError(
-                "The name must contain a first and last name, separated by a space.")
+                "The name must contain a first and last name, separated by a space")
         return value
 
     def validate(self, data):
