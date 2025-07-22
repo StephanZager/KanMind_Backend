@@ -133,5 +133,51 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
         return task
 
 
+class TaskUpdateSerializer(serializers.ModelSerializer):
+
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        source='assignee', queryset=User.objects.all(), required=False, allow_null=True
+    )
+    reviewer_id = serializers.PrimaryKeyRelatedField(
+        source='reviewer', queryset=User.objects.all(), required=False, allow_null=True
+    )
+
+    class Meta:
+        model = Tasks
+        fields = ['title', 'description', 'status', 'priority',
+                  'assignee_id', 'reviewer_id', 'due_date', 'board']
+
+        read_only_fields = ['board']
+
+    def validate(self, data):
+
+        board = self.instance.board
+
+        assignee = data.get('assignee')
+        reviewer = data.get('reviewer')
+
+        if assignee and assignee not in board.members.all():
+            raise serializers.ValidationError(
+                {"assignee_id": "Der zugewiesene Benutzer ist kein Mitglied des Boards."}
+            )
+
+        if reviewer and reviewer not in board.members.all():
+            raise serializers.ValidationError(
+                {"reviewer_id": "Der Prüfer ist kein Mitglied des Boards."}
+            )
+
+        return data
+
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    assignee = MemberSerializer(read_only=True)
+    reviewer = MemberSerializer(read_only=True)
+
+    class Meta:
+        model = Tasks
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority',
+                  'assignee', 'reviewer', 'due_date']
+
+
 class CommentSerializer(serializers.ModelSerializer):
     pass
