@@ -65,9 +65,9 @@ class CanAccessTaskComments(BasePermission):
 
     def has_permission(self, request, view):
         try:
-            task = Task.objects.get(pk=view.kwargs['task_id'])
+            task = Tasks.objects.get(pk=view.kwargs['task_id'])
             return request.user in task.board.members.all()
-        except Task.DoesNotExist:
+        except Tasks.DoesNotExist:
             return False
 
 

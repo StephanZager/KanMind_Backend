@@ -128,7 +128,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
             self.permission_denied(
                 self.request, message="You must be a member or the owner of the board to create a task."
             )
-        serializer.save(creator=user)
+        serializer.save()
 
 
 class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
