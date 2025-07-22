@@ -28,7 +28,7 @@ This is a backend API service for a Kanban board application, built with Python,
 ## 📁 Project Structure
 
 ```
-kanmind_backend/
+KanMind_Backend/
 ├── user_auth_app/    # Manages registration, login, etc.
 ├── kanban_app/       # Core logic for boards, tasks, comments
 ├── core/             # Main settings and URL routing
@@ -44,27 +44,36 @@ Follow these steps to set up and run the project locally:
 
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/Patrick-Gogolin/kamind_backend.git](https://github.com/Patrick-Gogolin/kamind_backend.git)
-    cd kamind_backend
+    git clone [https://github.com/StephanZager/KanMind_Backend.git](https://github.com/StephanZager/KanMind_Backend.git)
+    cd KanMind_Backend
     ```
 
-2.  **Create and activate a virtual environment**
+2.  **Create a virtual environment**
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows use: venv\Scripts\activate
     ```
 
-3.  **Install dependencies**
+3.  **Activate the virtual environment**
+    -   On **macOS / Linux**:
+        ```bash
+        source venv/bin/activate
+        ```
+    -   On **Windows**:
+        ```bash
+        venv\Scripts\activate
+        ```
+
+4.  **Install dependencies**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Apply database migrations**
+5.  **Apply database migrations**
     ```bash
     python manage.py migrate
     ```
 
-5.  **Run the development server**
+6.  **Run the development server**
     ```bash
     python manage.py runserver
     ```
@@ -120,4 +129,3 @@ tzdata==2025.2
 -   Users can access boards they own or have been added to as a member. This allows for collaboration.
 -   CORS is configured to allow frontend applications to communicate with the backend.
 -   For a production environment, the SQLite database should be replaced with a more robust solution like PostgreSQL.
-````
