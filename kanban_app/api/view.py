@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor
 from ..models import Board, Tasks, Comment
 from django.db.models import Q
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class BoardListCreateView(generics.ListCreateAPIView):
@@ -81,10 +83,13 @@ class TaskListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
 
         board = serializer.validated_data.get('board')
-        if self.request.user not in board.members.all():
+        user = self.request.user
+
+        if user not in board.members.all() and user != board.owner:
             self.permission_denied(
-                self.request, message="You must be a member of the board to create a task.")
-        serializer.save()
+                self.request, message="Sie müssen Mitglied oder Besitzer des Boards sein, um eine Task zu erstellen."
+            )
+        serializer.save() 
 
 
 class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
