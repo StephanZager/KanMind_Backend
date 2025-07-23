@@ -110,13 +110,13 @@ class BoardSerializerDetails(serializers.ModelSerializer):
     Provides a detailed, nested representation of a single Board, including
     full member data and a list of all associated tasks.
     """
-    owner = MemberSerializer(read_only=True)
+    owner_id = serializers.ReadOnlyField(source='owner.id')
     members = MembersField(many=True, queryset=User.objects.all())
     tasks = TaskInBoardSerializer(many=True, read_only=True)
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'owner', 'members', 'tasks']
+        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
 
 
 class TaskCreateUpdateSerializer(serializers.ModelSerializer):
