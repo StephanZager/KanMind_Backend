@@ -1,11 +1,14 @@
+from kanban_app.api import permissions
 from .serializers import RegistrationSerializer, EmailAuthTokenSerializer
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
+from rest_framework import generics, permissions
+
 
 
 class RegistrationView(APIView):
@@ -63,6 +66,7 @@ class LoginView(ObtainAuthToken):
         })
 
 class EmailCheckView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     """
     API view to check if an email address is already registered.
 
