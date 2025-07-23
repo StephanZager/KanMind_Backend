@@ -66,6 +66,38 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['title', 'members']
 
+class BoardUpdateSerializer(serializers.ModelSerializer):
+   
+    members = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=User.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = Board
+        fields = ['title', 'members']
+
+    def update(self, instance, validated_data):
+        members_data = validated_data.pop('members', None)
+        instance = super().update(instance, validated_data)
+
+        if members_data is not None:
+            instance.members.set(members_data)
+        
+        instance.save()
+        return instance        
+
+class BoardUpdateResponseSerializer(serializers.ModelSerializer):
+    """
+    Formatiert die AUSGABE nach einer erfolgreichen PUT/PATCH-Anfrage.
+    """
+    owner_data = MemberSerializer(read_only=True, source='owner')
+    members_data = MemberSerializer(many=True, read_only=True, source='members')
+
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'owner_data', 'members_data']
 
 class MembersField(serializers.PrimaryKeyRelatedField):
     """

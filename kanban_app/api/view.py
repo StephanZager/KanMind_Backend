@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails, TaskSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer
+from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor
 from ..models import Board, Tasks, Comment
@@ -75,6 +75,41 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
                 permissions.IsAuthenticated, (IsOwner | IsMember)
             ]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        """
+        Wählt den Serializer für die DATENVERARBEITUNG aus.
+        """
+        if self.request.method == 'GET':
+            return BoardSerializerDetails
+        # Für PUT/PATCH wird der UpdateSerializer zur Validierung der Eingabe verwendet.
+        return BoardUpdateSerializer
+
+    def update(self, request, *args, **kwargs):
+        """
+        Überschreibt die Standard-update-Methode, um die Antwort
+        explizit mit einem anderen Serializer zu formatieren.
+        """
+        # Holt das Board-Objekt, das aktualisiert werden soll
+        instance = self.get_object()
+        # Verwendet den BoardUpdateSerializer, um die Eingabedaten zu validieren und zu speichern
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # --- HIER IST DIE MAGIE ---
+        # Nach dem Speichern formatieren wir die ANTWORT mit dem Response-Serializer.
+        response_serializer = BoardUpdateResponseSerializer(
+            instance, context=self.get_serializer_context())
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        self.perform_destroy(instance)
+
+        return Response(data=None, status=status.HTTP_200_OK)
 
 
 class AssignedTasksView(generics.ListAPIView):
