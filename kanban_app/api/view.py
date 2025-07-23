@@ -149,7 +149,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
         """Selects the serializer based on the request method."""
         if self.request.method == 'POST':
             return TaskCreateUpdateSerializer
-        return TaskSerializer
+        return TaskDetailSerializer
 
     def perform_create(self, serializer):
         """
@@ -164,6 +164,17 @@ class TaskListCreateView(generics.ListCreateAPIView):
                 self.request, message="You must be a member or the owner of the board to create a task."
             )
         serializer.save()
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+        response_serializer = TaskDetailSerializer(serializer.instance)
+
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

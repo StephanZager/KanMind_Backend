@@ -162,11 +162,13 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
     reviewer_id = serializers.PrimaryKeyRelatedField(
         source='reviewer', queryset=User.objects.all(), required=False, allow_null=True
     )
+    board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
 
     class Meta:
         model = Tasks
-        fields = ['board', 'title', 'description', 'status', 'priority',
+        fields = ['id','board', 'title', 'description', 'status', 'priority',
                   'assignee_id', 'reviewer_id', 'due_date']
+        read_only_fields = ['id']
 
     def validate(self, data):
         """
@@ -242,12 +244,15 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     """
     assignee = MemberSerializer(read_only=True)
     reviewer = MemberSerializer(read_only=True)
+    comments_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Tasks
         fields = ['id', 'board', 'title', 'description', 'status', 'priority',
-                  'assignee', 'reviewer', 'due_date']
+                  'assignee', 'reviewer', 'due_date','comments_count']
 
+    def get_comments_count(self, obj):
+        return obj.comments.count()
 
 class CommentSerializer(serializers.ModelSerializer):
     """
