@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer,TaskUpdateResponseSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
+from .serializers import BoardSerializer, BoardCreateSerializer, TaskUpdateResponseSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor
 from ..models import Board, Tasks, Comment
@@ -163,7 +163,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
             self.permission_denied(
                 self.request, message="You must be a member or the owner of the board to create a task."
             )
-        serializer.save()
+        serializer.save(creator=user)
 
     def create(self, request, *args, **kwargs):
 
@@ -203,15 +203,23 @@ class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-    
-        # Validierung und Speichern mit TaskUpdateSerializer
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        # Antwort mit TaskDetailSerializer (verschachtelte User-Daten)
         response_serializer = TaskUpdateResponseSerializer(instance)
         return Response(response_serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Löscht eine bestehende Task. Nur der Ersteller der Task oder der Eigentümer des Boards kann die Task löschen.
+        Gibt bei Erfolg eine leere Antwort mit Status 204 zurück.
+        """
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(data=None, status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):

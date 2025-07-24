@@ -28,6 +28,7 @@ class Tasks(models.Model):
         ('high', 'High'),
     ]
 
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tasks')
     board = models.ForeignKey(
         Board, on_delete=models.CASCADE, related_name='tasks')
     title = models.CharField(max_length=100)
