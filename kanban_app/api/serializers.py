@@ -66,8 +66,9 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['title', 'members']
 
+
 class BoardUpdateSerializer(serializers.ModelSerializer):
-   
+
     members = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=User.objects.all(),
@@ -84,26 +85,30 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
 
         if members_data is not None:
             instance.members.set(members_data)
-        
+
         instance.save()
-        return instance        
+        return instance
+
 
 class BoardUpdateResponseSerializer(serializers.ModelSerializer):
     """
     Formatiert die AUSGABE nach einer erfolgreichen PUT/PATCH-Anfrage.
     """
     owner_data = MemberSerializer(read_only=True, source='owner')
-    members_data = MemberSerializer(many=True, read_only=True, source='members')
+    members_data = MemberSerializer(
+        many=True, read_only=True, source='members')
 
     class Meta:
         model = Board
         fields = ['id', 'title', 'owner_data', 'members_data']
+
 
 class MembersField(serializers.PrimaryKeyRelatedField):
     """
     Custom field to represent a member relationship using the MemberSerializer
     for detailed output instead of just an ID.
     """
+
     def to_representation(self, value):
         return MemberSerializer(instance=value).data
 
@@ -166,7 +171,7 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tasks
-        fields = ['id','board', 'title', 'description', 'status', 'priority',
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority',
                   'assignee_id', 'reviewer_id', 'due_date']
         read_only_fields = ['id']
 
@@ -181,7 +186,8 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
         reviewer = data.get('reviewer')
 
         if not board:
-             raise serializers.ValidationError("Board is required for validation.")
+            raise serializers.ValidationError(
+                "Board is required for validation.")
 
         if assignee and assignee not in board.members.all():
             raise serializers.ValidationError(
@@ -198,22 +204,23 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
-    """
-    Specifically handles updating an existing Task. The 'board' field is
-    read-only to prevent moving a task to a different board.
-    """
     assignee_id = serializers.PrimaryKeyRelatedField(
-        source='assignee', queryset=User.objects.all(), required=False, allow_null=True
+        source='assignee',
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True
     )
     reviewer_id = serializers.PrimaryKeyRelatedField(
-        source='reviewer', queryset=User.objects.all(), required=False, allow_null=True
+        source='reviewer',
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True
     )
 
     class Meta:
         model = Tasks
-        fields = ['title', 'description', 'status', 'priority',
-                  'assignee_id', 'reviewer_id', 'due_date', 'board']
-        read_only_fields = ['board']
+        fields = ['id', 'title', 'description', 'status', 'priority',
+                  'assignee_id', 'reviewer_id', 'due_date']
 
     def validate(self, data):
         """
@@ -226,12 +233,12 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
         if assignee and assignee not in board.members.all():
             raise serializers.ValidationError(
-                {"assignee_id": "The assigned user is not a member of the board."}
+                {"assignee": "The assigned user is not a member of the board."}
             )
 
         if reviewer and reviewer not in board.members.all():
             raise serializers.ValidationError(
-                {"reviewer_id": "The auditor is not a member of the board."}
+                {"reviewer": "The auditor is not a member of the board."}
             )
 
         return data
@@ -249,10 +256,21 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks
         fields = ['id', 'board', 'title', 'description', 'status', 'priority',
-                  'assignee', 'reviewer', 'due_date','comments_count']
+                  'assignee', 'reviewer', 'due_date', 'comments_count']
 
     def get_comments_count(self, obj):
         return obj.comments.count()
+
+class TaskUpdateResponseSerializer(serializers.ModelSerializer):
+    assignee = MemberSerializer(read_only=True)
+    reviewer = MemberSerializer(read_only=True)
+
+    class Meta:
+        model = Tasks
+        fields = [
+            'id', 'title', 'description', 'status', 'priority',
+            'assignee', 'reviewer', 'due_date'
+        ]
 
 class CommentSerializer(serializers.ModelSerializer):
     """
@@ -272,4 +290,3 @@ class CommentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "The content cannot be empty.")
         return value
-

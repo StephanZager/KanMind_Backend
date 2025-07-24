@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
-from .serializers import BoardSerializer, BoardCreateSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
+from .serializers import BoardSerializer, BoardCreateSerializer,TaskUpdateResponseSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
 from django.contrib.auth.models import User
 from .permissions import IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor
 from ..models import Board, Tasks, Comment
@@ -195,6 +195,23 @@ class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ['PUT', 'PATCH']:
             return TaskUpdateSerializer
         return TaskDetailSerializer
+
+    def update(self, request, *args, **kwargs):
+        """
+        Überschreibt die update-Methode, um nach dem Speichern die
+        detaillierte Antwort mit dem Lese-Serializer zurückzugeben.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+    
+        # Validierung und Speichern mit TaskUpdateSerializer
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Antwort mit TaskDetailSerializer (verschachtelte User-Daten)
+        response_serializer = TaskUpdateResponseSerializer(instance)
+        return Response(response_serializer.data)
 
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):
