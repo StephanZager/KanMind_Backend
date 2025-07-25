@@ -112,14 +112,15 @@ class AssignedTasksView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Tasks.objects.filter(assignee=user)
-    
+
+
 class ReviewingTasksView(generics.ListAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Tasks.objects.filter(reviewer=user)    
+        return Tasks.objects.filter(reviewer=user)
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
@@ -150,6 +151,11 @@ class TaskListCreateView(generics.ListCreateAPIView):
         serializer.save(creator=user)
 
     def create(self, request, *args, **kwargs):
+
+        board_id = request.data.get('board')
+        if not board_id:
+            return Response({'detail': 'Board field is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        get_object_or_404(Board, pk=board_id)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
