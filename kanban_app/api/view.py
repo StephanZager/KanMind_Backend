@@ -113,29 +113,20 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class AssignedTasksView(generics.ListAPIView):
-    """
-    Provides a list of all tasks assigned to the currently authenticated user.
-    """
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """Returns tasks where the current user is the assignee."""
-        return Tasks.objects.filter(assignee=self.request.user)
-
-
+        user = self.request.user
+        return Tasks.objects.filter(assignee=user)
+    
 class ReviewingTasksView(generics.ListAPIView):
-    """
-
-    Provides a list of all tasks where the currently authenticated user
-    is the reviewer.
-    """
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """Returns tasks where the current user is the reviewer."""
-        return Tasks.objects.filter(reviewer=self.request.user)
+        user = self.request.user
+        return Tasks.objects.filter(reviewer=user)    
 
 
 class TaskListCreateView(generics.ListCreateAPIView):

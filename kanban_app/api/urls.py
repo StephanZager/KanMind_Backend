@@ -1,5 +1,5 @@
 from django.urls import path
-from .view import BoardListCreateView, BorderDetailView, AssignedTasksView, ReviewingTasksView, TaskListCreateView, TaskDetailAPIView, CommentListCreateAPIView, CommentDestroyAPIView
+from .view import BoardListCreateView, BorderDetailView, TaskListCreateView, TaskDetailAPIView, CommentListCreateAPIView, CommentDestroyAPIView,ReviewingTasksView,AssignedTasksView
 
 urlpatterns = [
     path('boards/', BoardListCreateView.as_view(), name='board-list'),
