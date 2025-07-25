@@ -1,5 +1,6 @@
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import NotFound
 from ..models import Board, Tasks, Comment
 
 
@@ -8,6 +9,7 @@ class IsOwner(BasePermission):
     Object-level permission to only allow owners of an object to access it.
     Assumes the model instance has an `owner` attribute.
     """
+
     def has_object_permission(self, request, view, obj):
         return obj.owner == request.user
 
@@ -17,6 +19,7 @@ class IsMember(BasePermission):
     Object-level permission to only allow members of an object to access it.
     Assumes the model instance has a `members` many-to-many relationship.
     """
+
     def has_object_permission(self, request, view, obj):
         return request.user in obj.members.all()
 
@@ -26,6 +29,7 @@ class IsBoardMember(BasePermission):
     Object-level permission to only allow members of an associated board.
     Assumes the model instance has a `board` foreign key attribute.
     """
+
     def has_object_permission(self, request, view, obj):
         return request.user in obj.board.members.all()
 
@@ -66,9 +70,9 @@ class CanAccessTaskComments(BasePermission):
     def has_permission(self, request, view):
         try:
             task = Tasks.objects.get(pk=view.kwargs['task_id'])
-            return request.user in task.board.members.all()
         except Tasks.DoesNotExist:
-            return False
+            raise NotFound("Task not found.")
+        return request.user in task.board.members.all()
 
 
 class IsCommentAuthor(BasePermission):
