@@ -261,6 +261,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     def get_comments_count(self, obj):
         return obj.comments.count()
 
+
 class TaskUpdateResponseSerializer(serializers.ModelSerializer):
     assignee = MemberSerializer(read_only=True)
     reviewer = MemberSerializer(read_only=True)
@@ -271,6 +272,7 @@ class TaskUpdateResponseSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'status', 'priority',
             'assignee', 'reviewer', 'due_date'
         ]
+
 
 class CommentSerializer(serializers.ModelSerializer):
     """

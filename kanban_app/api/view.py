@@ -69,8 +69,6 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == 'DELETE':
             permission_classes = [permissions.IsAuthenticated, IsOwner]
         else:
-            # Note: DRF's default permission composition is AND.
-            # `IsOwner | IsMember` creates a logical OR condition.
             permission_classes = [
                 permissions.IsAuthenticated, (IsOwner | IsMember)
             ]
@@ -78,28 +76,23 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         """
-        Wählt den Serializer für die DATENVERARBEITUNG aus.
+        Selects the serializer for DATA PROCESSING.
         """
         if self.request.method == 'GET':
             return BoardSerializerDetails
-        # Für PUT/PATCH wird der UpdateSerializer zur Validierung der Eingabe verwendet.
         return BoardUpdateSerializer
 
     def update(self, request, *args, **kwargs):
         """
-        Überschreibt die Standard-update-Methode, um die Antwort
-        explizit mit einem anderen Serializer zu formatieren.
+        Overrides the default update method to the response
+        explicitly format it with another serializer.
         """
-        # Holt das Board-Objekt, das aktualisiert werden soll
         instance = self.get_object()
-        # Verwendet den BoardUpdateSerializer, um die Eingabedaten zu validieren und zu speichern
         serializer = self.get_serializer(
             instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        # --- HIER IST DIE MAGIE ---
-        # Nach dem Speichern formatieren wir die ANTWORT mit dem Response-Serializer.
         response_serializer = BoardUpdateResponseSerializer(
             instance, context=self.get_serializer_context())
         return Response(response_serializer.data, status=status.HTTP_200_OK)
@@ -189,8 +182,8 @@ class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         """
-        Überschreibt die update-Methode, um nach dem Speichern die
-        detaillierte Antwort mit dem Lese-Serializer zurückzugeben.
+        Overrides the update method after saving the
+        to return detailed response using the read serializer.
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -205,8 +198,8 @@ class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         """
-        Löscht eine bestehende Task. Nur der Ersteller der Task oder der Eigentümer des Boards kann die Task löschen.
-        Gibt bei Erfolg eine leere Antwort mit Status 204 zurück.
+        Deletes an existing task. Only the task creator or board owner can delete the task.
+        Returns an empty response with status 204 if successful.
         """
         instance = self.get_object()
         self.perform_destroy(instance)
