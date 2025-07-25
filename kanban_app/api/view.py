@@ -102,7 +102,7 @@ class BorderDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
 
-        return Response(data=None, status=status.HTTP_200_OK)
+        return Response(data=None, status=status.HTTP_204_NO_CONTENT)
 
 
 class AssignedTasksView(generics.ListAPIView):
