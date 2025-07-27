@@ -8,7 +8,7 @@ from ..models import Board, Tasks, Comment
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
-
+from rest_framework.exceptions import ValidationError, NotFound
 
 class BoardListCreateView(generics.ListCreateAPIView):
     """
@@ -153,14 +153,20 @@ class TaskListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         board_id = request.data.get('board')
         if not board_id:
-          return Response({'detail': 'Board field is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Board field is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as exc:
+            errors = exc.detail
+            # Prüfe, ob der Fehler auf ein nicht gefundenes Board zurückzuführen ist
+            if "board" in errors and any("object does not exist" in str(msg) for msg in errors["board"]):
+                raise NotFound("Board not found.")
+            raise
 
         self.perform_create(serializer)
         response_serializer = TaskDetailSerializer(serializer.instance)
-
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
