@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import NotFound
@@ -84,3 +85,43 @@ class IsCommentAuthor(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.author == request.user
+
+
+class TaskExistsPermission(permissions.BasePermission):
+    """
+    A permission class that first checks whether the specified in the URL
+    Task exists. If not, a 404 error will be thrown immediately.
+    """
+    message = "The specified task was not found."
+
+    def has_permission(self, request, view):
+        """      
+        This method runs before any other permissions.
+        """
+
+        task_id = view.kwargs.get('task_id')
+
+        get_object_or_404(Tasks, pk=task_id)
+
+        return True
+
+
+class CommentExistsForTaskPermission(permissions.BasePermission):
+    """
+    Checks whether the comment specified in the URL exists AND for
+    specified task belongs. Throws a 404 error if either
+    is not found. This class should be used for views that
+    Edit a specific comment (e.g. delete).
+    """
+    message = "Comment or task not found."
+
+    def has_permission(self, request, view):
+        """
+        This method runs before any other permissions.
+        """
+        task_id = view.kwargs.get('task_id')
+        comment_lookup_kwarg = view.lookup_url_kwarg or 'pk'
+        comment_id = view.kwargs.get(comment_lookup_kwarg)
+        get_object_or_404(Comment, pk=comment_id, task_id=task_id)
+
+        return True

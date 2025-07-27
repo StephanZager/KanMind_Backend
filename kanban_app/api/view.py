@@ -3,7 +3,7 @@ from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from .serializers import BoardSerializer, BoardCreateSerializer, TaskUpdateResponseSerializer, BoardSerializerDetails, TaskSerializer, BoardUpdateResponseSerializer, TaskCreateUpdateSerializer, TaskDetailSerializer, TaskUpdateSerializer, CommentSerializer, BoardUpdateSerializer
 from django.contrib.auth.models import User
-from .permissions import IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor
+from .permissions import CommentExistsForTaskPermission, IsOwner, IsMember, IsBoardMember, CanUpdateOrDestroyTask, CanAccessTaskComments, IsCommentAuthor, TaskExistsPermission
 from ..models import Board, Tasks, Comment
 from django.db.models import Q
 from rest_framework.response import Response
@@ -216,39 +216,39 @@ class TaskDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         return Response(data=None, status=status.HTTP_204_NO_CONTENT)
 
 
+
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     """
-    Handles listing all comments for a specific task and creating a new comment.
+    Manages listing and creating comments for a specific task.
     """
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, CanAccessTaskComments]
+
+    permission_classes = [TaskExistsPermission, permissions.IsAuthenticated, CanAccessTaskComments]
 
     def get_queryset(self):
-        """Filters comments to only include those for the specified task."""
+        """Filtert Kommentare, um nur die für den angegebenen Task anzuzeigen."""
         task_id = self.kwargs['task_id']
         return Comment.objects.filter(task_id=task_id)
 
     def perform_create(self, serializer):
-        """
-        Automatically assigns the current user as the author and associates
-        the comment with the correct task from the URL.
-        """
+        """Automatically assigns the comment to the correct task and user."""
         task = get_object_or_404(Tasks, pk=self.kwargs['task_id'])
         serializer.save(author=self.request.user, task=task)
 
 
 class CommentDestroyAPIView(generics.DestroyAPIView):
     """
-    Handles the deletion of a single comment.
+    Manages deletion of a single comment.
     """
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsCommentAuthor]
+    
+    permission_classes = [CommentExistsForTaskPermission, permissions.IsAuthenticated, IsCommentAuthor]
     lookup_url_kwarg = 'comment_id'
 
     def get_queryset(self):
         """
-        Filters the queryset to ensure the comment belongs to the task
-        specified in the URL, preventing accidental deletion across tasks.
+        Filters the query set to ensure that the comment is on the task
+        heard from the URL.
         """
         task_id = self.kwargs['task_id']
         return Comment.objects.filter(task_id=task_id)
