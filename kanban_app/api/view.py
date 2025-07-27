@@ -151,11 +151,9 @@ class TaskListCreateView(generics.ListCreateAPIView):
         serializer.save(creator=user)
 
     def create(self, request, *args, **kwargs):
-
         board_id = request.data.get('board')
         if not board_id:
-            return Response({'detail': 'Board field is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        get_object_or_404(Board, pk=board_id)
+          return Response({'detail': 'Board field is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
